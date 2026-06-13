@@ -1,8 +1,12 @@
 package com.authservice.microservice.controller;
 
+import com.authservice.microservice.dto.AuthenticationResponse;
 import com.authservice.microservice.dto.LoginRequest;
+import com.authservice.microservice.dto.RefreshTokenRequest;
 import com.authservice.microservice.dto.RegisterRequest;
+import com.authservice.microservice.entity.RefreshToken;
 import com.authservice.microservice.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,12 +21,20 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
 
+    // 1. Update your login endpoint to use the new return type:
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request){
+    public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody LoginRequest request){
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    // 2. Add the new refresh endpoint:
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthenticationResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        AuthenticationResponse response = authService.refreshToken(request);
+        return ResponseEntity.ok(response);
     }
 }
