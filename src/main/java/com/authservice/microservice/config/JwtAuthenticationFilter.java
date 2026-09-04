@@ -53,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (ExpiredJwtException e) {
-            // Log it gently in the console instead of crashing the application
+            // Logging it gently in the console instead of crashing the application
             System.out.println("Bypassing expired JWT in filter chain: " + e.getMessage());
         }
 

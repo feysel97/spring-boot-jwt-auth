@@ -1,0 +1,23 @@
+Database Connection
+
+spring.datasource.url=jdbc:mysql://localhost:3306/your_database_name
+spring.datasource.username=YOUR_DATABASE_USERNAME
+spring.datasource.password=YOUR_DATABASE_PASSWORD
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+JPA / Hibernate
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.format_sql=false
+
+Server Port
+
+server.port=8081
+
+JWT Configuration
+
+Ensure your secret key is at least 32 characters (256-bit) long!
+
+application.security.jwt.secret-key=YOUR_JWT_SECRET
+application.security.jwt.expiration=86400000

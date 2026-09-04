@@ -25,13 +25,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.register(request));
     }
 
-    // 1. Update your login endpoint to use the new return type:
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody LoginRequest request){
         return ResponseEntity.ok(authService.login(request));
     }
 
-    // 2. Add the new refresh endpoint:
     @PostMapping("/refresh")
     public ResponseEntity<AuthenticationResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         AuthenticationResponse response = authService.refreshToken(request);

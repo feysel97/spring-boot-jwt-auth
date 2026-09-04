@@ -3,27 +3,40 @@ package com.authservice.microservice.service;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY = "your_very_secret_and_very_long_key_that_is_at_least_32_characters";
-    private static final long EXPIRATION_TIME = 86400000;
+    // Pulls the value from application.properties
+    @Value("${application.security.jwt.secret-key}")
+    private String secretKey;
+
+    // Pulls the value from application.properties
+    @Value("${application.security.jwt.expiration}")
+    private long jwtExpiration;
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+        return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    public String generateToken(String username) {
+    public String generateToken(UserDetails userDetails) {
+        // Extract roles from the UserDetails object
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(org.springframework.security.core.GrantedAuthority::getAuthority)
+                .toList();
+
         return Jwts.builder()
-                .setSubject(username)
+                .claim("roles", roles) // Inject the roles into the JWT payload
+                .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -51,4 +64,6 @@ public class JwtService {
                 .getExpiration()
                 .before(new Date());
     }
+
+
 }

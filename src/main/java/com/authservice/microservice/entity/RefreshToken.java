@@ -24,5 +24,5 @@ public class RefreshToken {
 
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private User userInfo; // This targets your custom database User!
+    private User userInfo;
 }

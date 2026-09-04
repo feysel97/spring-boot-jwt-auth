@@ -34,8 +34,8 @@ public class AuthService {
                 .username(request.username())
                 .email(request.email())
                 .password(encodedPassword)
+                .role(com.authservice.microservice.enums.Role.ROLE_USER) // Default role
                 .build();
-
         userRepository.save(newUser);
 
         return "User registered successfully!";
@@ -50,7 +50,7 @@ public class AuthService {
         }
 
         // Generate both tokens
-        String accessToken = jwtService.generateToken(user.getUsername());
+        String accessToken = jwtService.generateToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getUsername());
 
         return AuthenticationResponse.builder()
@@ -65,7 +65,7 @@ public class AuthService {
                 .map(RefreshToken::getUserInfo) // Extracts the User object linked to the token
                 .map(user -> {
                     // Generate a fresh access token for this user
-                    String accessToken = jwtService.generateToken(user.getUsername());
+                    String accessToken = jwtService.generateToken(user);
 
                     return AuthenticationResponse.builder()
                             .accessToken(accessToken)

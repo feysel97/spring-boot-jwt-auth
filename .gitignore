@@ -43,6 +43,9 @@ target/
 # Log files
 *.log
 
+# Application secrets/configuration
+src/main/resources/application.properties
+
 # System files
 .DS_Store
 Thumbs.db
