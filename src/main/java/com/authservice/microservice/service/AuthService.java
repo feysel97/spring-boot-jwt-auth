@@ -6,7 +6,11 @@ import com.authservice.microservice.dto.RefreshTokenRequest;
 import com.authservice.microservice.dto.RegisterRequest;
 import com.authservice.microservice.entity.RefreshToken;
 import com.authservice.microservice.entity.User;
+import com.authservice.microservice.enums.Role;
+import com.authservice.microservice.event.UserRegisteredEvent;
+import com.authservice.microservice.publisher.UserEventPublisher;
 import com.authservice.microservice.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,6 +19,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private final UserEventPublisher userEventPublisher;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -34,22 +39,31 @@ public class AuthService {
                 .username(request.username())
                 .email(request.email())
                 .password(encodedPassword)
-                .role(com.authservice.microservice.enums.Role.ROLE_USER) // Default role
+                .role(com.authservice.microservice.enums.Role.ROLE_USER)
                 .build();
-        userRepository.save(newUser);
+
+        User savedUser = userRepository.save(newUser);
+
+        // Publish event to RabbitMQ using Lombok Builder
+        UserRegisteredEvent event = UserRegisteredEvent.builder()
+                .userId(savedUser.getId())
+                .username(savedUser.getUsername())
+                .email(savedUser.getEmail())
+                .build();
+
+        userEventPublisher.publishUserRegisteredEvent(event);
 
         return "User registered successfully!";
     }
 
-    public AuthenticationResponse login(LoginRequest request){
+    public AuthenticationResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new RuntimeException("Invalid username or password!"));
 
-        if(!passwordEncoder.matches(request.password(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new RuntimeException("Invalid username or password!");
         }
 
-        // Generate both tokens
         String accessToken = jwtService.generateToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getUsername());
 
@@ -59,21 +73,26 @@ public class AuthService {
                 .build();
     }
 
+    @Transactional
+    public void updateUserRole(Long userId, Role newRole) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        user.setRole(newRole);
+        userRepository.save(user);
+    }
+
     public AuthenticationResponse refreshToken(RefreshTokenRequest request) {
         return refreshTokenService.findByToken(request.refreshToken())
                 .map(refreshTokenService::verifyExpiration)
-                .map(RefreshToken::getUserInfo) // Extracts the User object linked to the token
+                .map(RefreshToken::getUserInfo)
                 .map(user -> {
-                    // Generate a fresh access token for this user
                     String accessToken = jwtService.generateToken(user);
-
                     return AuthenticationResponse.builder()
                             .accessToken(accessToken)
-                            .refreshToken(request.refreshToken()) // Keep using the same refresh token
+                            .refreshToken(request.refreshToken())
                             .build();
                 })
                 .orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
     }
-
-
 }

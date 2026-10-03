@@ -18,19 +18,16 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
 
-    // Set expiration to 7 days (in milliseconds)
     private static final long REFRESH_TOKEN_EXPIRATION = 604800000L;
 
     public RefreshToken createRefreshToken(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Check if a refresh token already exists for this user
         Optional<RefreshToken> existingToken = refreshTokenRepository.findByUserInfo(user);
 
         RefreshToken refreshToken;
         if (existingToken.isPresent()) {
-            // Update the token value and expiry date for the existing database row
             refreshToken = existingToken.get();
             refreshToken.setToken(UUID.randomUUID().toString());
             refreshToken.setExpiryDate(Instant.now().plusMillis(REFRESH_TOKEN_EXPIRATION));

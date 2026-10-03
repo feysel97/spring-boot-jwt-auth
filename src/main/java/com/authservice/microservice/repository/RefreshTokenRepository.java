@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
     Optional<RefreshToken> findByToken(String token);
-    Optional<RefreshToken> findByUserInfo(User userInfo); // This will now correctly expect your custom User!
+    Optional<RefreshToken> findByUserInfo(User userInfo);
 }

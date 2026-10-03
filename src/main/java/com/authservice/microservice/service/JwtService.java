@@ -14,11 +14,9 @@ import java.util.List;
 @Service
 public class JwtService {
 
-    // Pulls the value from application.properties
     @Value("${application.security.jwt.secret-key}")
     private String secretKey;
 
-    // Pulls the value from application.properties
     @Value("${application.security.jwt.expiration}")
     private long jwtExpiration;
 
@@ -27,13 +25,12 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
-        // Extract roles from the UserDetails object
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(org.springframework.security.core.GrantedAuthority::getAuthority)
                 .toList();
 
         return Jwts.builder()
-                .claim("roles", roles) // Inject the roles into the JWT payload
+                .claim("roles", roles)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
