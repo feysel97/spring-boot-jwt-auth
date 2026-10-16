@@ -29,9 +29,16 @@ public class JwtService {
                 .map(org.springframework.security.core.GrantedAuthority::getAuthority)
                 .toList();
 
+        // Safely extract the email from your custom User entity
+        String email = "";
+        if (userDetails instanceof com.authservice.microservice.entity.User user) {
+            email = user.getEmail();
+        }
+
         return Jwts.builder()
                 .claim("roles", roles)
-                .setSubject(userDetails.getUsername())
+                .claim("email", email) // <-- Inject email as a custom claim
+                .setSubject(userDetails.getUsername()) // Keep username as subject
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)

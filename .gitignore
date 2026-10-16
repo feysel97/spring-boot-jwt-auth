@@ -36,20 +36,12 @@ out/
 ### VS Code ###
 .vscode/
 
-# Compiled class files
-target/
-*.class
-
-# Log files
-*.log
-
-# Application secrets/configuration
-src/main/resources/application.properties
-
-# System files
+### Mac OS ###
 .DS_Store
-Thumbs.db
 
+### Environment Variables ###
+.env
 
-
-
+### Spring Boot Configs ###
+src/main/resources/application.yaml
+src/main/resources/application.properties

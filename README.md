@@ -34,6 +34,8 @@ This project demonstrates clean coding practices, modern Java 21 features (like 
 | `POST` | `/api/auth/refresh` | public | `RefreshTokenRequest`| `AuthenticationResponse` | Validates a refresh token to rotate and issue a new Access Token. |
 | `PATCH` | `/api/auth/admin/users/{id}/role` | admin | `UpdateRoleRequest` | String (Success Message) | Updates a target user's role (requires `ROLE_ADMIN` authority). |
 | `GET` | `/api/v1/users/me` | protected | None (Bearer Token) | String (Profile confirmation) | A mock resource requiring a valid, unexpired JWT bearer authentication. |
+| `POST` | `/api/auth/forgot-password` | public | `ForgotPasswordRequest` | String | Generates a UUID reset token and publishes a PASSWORD_RESET_REQUESTED event. |
+| `POST` | `/api/auth/reset-password` | public | `ResetPasswordRequest` | String | Updates user password and publishes a PASSWORD_CHANGED event. |
 
 ## 📄 API Request & Response Contracts
 
@@ -113,9 +115,7 @@ When a user registers:
 
 Credentials are validated and saved to auth_service_db with a default ROLE_USER.
 
-An asynchronous UserRegisteredEvent payload (userId, username, email) is published to the user-registration-exchange.
-
-Downstream microservices (such as User-Service) consume the message to initialize profile records locally without synchronous HTTP blocking.
+Integrates RabbitMQ to asynchronously publish generic NotificationEvent messages upon successful signup and password reset flows, decoupling identity management and email communications from downstream domain services.
 
 🧠 Lessons Learned
 During development I implemented:

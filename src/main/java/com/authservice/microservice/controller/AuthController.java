@@ -1,9 +1,6 @@
 package com.authservice.microservice.controller;
 
-import com.authservice.microservice.dto.AuthenticationResponse;
-import com.authservice.microservice.dto.LoginRequest;
-import com.authservice.microservice.dto.RefreshTokenRequest;
-import com.authservice.microservice.dto.RegisterRequest;
+import com.authservice.microservice.dto.*;
 import com.authservice.microservice.entity.RefreshToken;
 import com.authservice.microservice.service.AuthService;
 import jakarta.validation.Valid;
@@ -34,5 +31,15 @@ public class AuthController {
     public ResponseEntity<AuthenticationResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         AuthenticationResponse response = authService.refreshToken(request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        return ResponseEntity.ok(authService.forgotPassword(request));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        return ResponseEntity.ok(authService.resetPassword(request));
     }
 }
