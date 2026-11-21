@@ -6,10 +6,7 @@ import com.authservice.microservice.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -33,6 +30,14 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(
+            java.security.Principal principal,
+            @Valid @RequestBody ChangePasswordRequest request) {
+
+        return ResponseEntity.ok(authService.changePassword(principal.getName(), request));
+    }
+
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         return ResponseEntity.ok(authService.forgotPassword(request));
@@ -41,5 +46,11 @@ public class AuthController {
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         return ResponseEntity.ok(authService.resetPassword(request));
+    }
+
+    // to test the open-feign endpoint
+    @GetMapping("/status")
+    public ResponseEntity<String> getStatus() {
+        return ResponseEntity.ok("Hello from Auth-Service! Feign communication successful.");
     }
 }

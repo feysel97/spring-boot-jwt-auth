@@ -6,12 +6,12 @@ This project demonstrates clean coding practices, modern Java 21 features (like 
 
 ## 🚀 Key Features
 
-* **Event-Driven Architecture:** Integrates RabbitMQ to asynchronously publish `UserRegisteredEvent` messages upon successful signup, decoupling identity management from downstream domain services.
+* **Event-Driven Architecture:** Integrates RabbitMQ to asynchronously Publish `USER_REGISTERED`, `PASSWORD_RESET_REQUESTED`, and `PASSWORD_CHANGED` events to RabbitMQ, and listens for `ACCOUNT_DEACTIVATED` events from the User Service (Saga pattern) to disable accounts, decoupling identity management from downstream domain services.
 * **Role-Based Access Control (RBAC):** Hardened endpoint protection using strict URL path matchers and `@EnableMethodSecurity` to enforce `@PreAuthorize` rules seamlessly, preventing security bypasses.
 * **Dual-Token Architecture:** High-security configuration using short-lived stateless JWT Access Tokens paired with long-lived database-backed UUID Refresh Tokens.
 * **Spring Security 6 Integration:** A customized, state-of-the-art security filter chain that explicitly separates public endpoints from protected domain resources.
 * **Idempotent Token Management (Upsert Logic):** Gracefully updates existing database tokens instead of crashing with duplicate key errors on repeat logins.
-* **Defensive Input Validation:** Active request screening at the API boundary using `jakarta.validation` annotations.
+* **Defensive Input Validation:** Active request screening at the API boundary using `jakarta.validation` annotations. Regex `@Pattern` and `@Size` constraints on registration and password change DTOs (blocks spaces in usernames and enforces alphanumeric password complexity).
 * **Graceful Filter Exception Handling:** Captures `ExpiredJwtException` directly inside the filter chain to allow public requests through without system crashes.
 * **Robust Global Exception Handling:** Translates system crashes and validation failures into clean, unified, and standard JSON error payloads.
 * **Cryptographic Protection:** Strong password hashing with Spring Security's `BCryptPasswordEncoder`.
@@ -135,7 +135,7 @@ Global exception handling and defensive request validation with Jakarta Validati
 Stateless authentication architecture
 
 🏃 Getting Started
-Clone the repository.
+Clone the repository and Copy `src/main/resources/application.properties.example` to `application.properties` and fill in your local DB, RabbitMQ, and JWT secrets.
 
 Start RabbitMQ via Docker:docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 

@@ -11,8 +11,10 @@ import com.authservice.microservice.repository.PasswordResetTokenRepository;
 import com.authservice.microservice.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -64,8 +66,13 @@ public class AuthService {
         User user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new RuntimeException("Invalid username or password!"));
 
+        if (!user.isEnabled()) {
+            // Throw a 403 Forbidden so the client knows it is an access restriction
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This account has been deactivated.");
+        }
+
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new RuntimeException("Invalid username or password!");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password!");
         }
 
         String accessToken = jwtService.generateToken(user);
@@ -160,5 +167,34 @@ public class AuthService {
         notificationEventPublisher.publishEvent("user.password.changed", event);
 
         return "Password has been successfully updated.";
+    }
+
+    @Transactional
+    public String changePassword(String username, ChangePasswordRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
+            // Throwing a 400 Bad Request if the old password doesn't match
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Incorrect current password."
+            );
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+
+        // Publish success event for the notification-service
+        NotificationEvent event = NotificationEvent.builder()
+                .eventType("PASSWORD_CHANGED")
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .metadata(java.util.Map.of("userId", user.getId()))
+                .build();
+
+        notificationEventPublisher.publishEvent("user.password.changed", event);
+
+        return "Password successfully updated.";
     }
 }

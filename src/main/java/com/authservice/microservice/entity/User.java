@@ -35,6 +35,10 @@ public class User implements UserDetails, Persistable<Long> {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean enabled = true;
+
     @Transient
     private boolean isNewEntity = true;
 
@@ -61,5 +65,5 @@ public class User implements UserDetails, Persistable<Long> {
     @Override public boolean isAccountNonExpired() { return true; }
     @Override public boolean isAccountNonLocked() { return true; }
     @Override public boolean isCredentialsNonExpired() { return true; }
-    @Override public boolean isEnabled() { return true; }
+    @Override public boolean isEnabled() { return this.enabled; }
 }
